@@ -6,6 +6,7 @@ import { transform } from "oxc-transform";
 import { readFile } from "fs/promises";
 import migrate from "tsconfig-migrate/oxc.js";
 import { parse } from "tsconfck";
+import { Buffer } from "node:buffer";
 
 const { tsconfig, tsconfigFile } = await (async () => {
   try {

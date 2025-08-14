@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+import process from "node:process";
 import { spawnSync } from "node:child_process";
 import { registerURL } from "./loader-register.ts";
 
