@@ -1,0 +1,9 @@
+{
+  "extends": "@startracex/dev-config/tsconfig/lib",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./build"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": []
+}
