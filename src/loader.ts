@@ -7,7 +7,17 @@ import { readFile } from "fs/promises";
 import migrate from "tsconfig-migrate/oxc.js";
 import { parse } from "tsconfck";
 
-const { tsconfig } = await parse("tsconfig.json");
+const { tsconfig, tsconfigFile } = await (async () => {
+  try {
+    return await parse("tsconfig.json");
+  } catch {
+    return {
+      tsconfig: {},
+      tsconfigFile: undefined,
+    };
+  }
+})();
+
 const transformOptions = migrate({
   ...tsconfig.compilerOptions,
   declaration: false,
@@ -15,12 +25,24 @@ const transformOptions = migrate({
   sourceMap: true,
 });
 
-const scriptExtensions = new Set([".ts", ".mts", ".cts", ".js", ".mjs", ".cjs", ".es"]);
-const extensions = new Set([...scriptExtensions, ".json", ".node"]);
+const tsExtensions = new Set([".ts", ".mts", ".cts", ".tsx"]);
+const extensions = new Set([...tsExtensions, ".js", ".mjs", ".cjs", ".jsx", ".json", ".wasm", ".node"]);
 
 const rf = new ResolverFactory({
   conditionNames: ["import", "module", "node"],
+  tsconfig: tsconfigFile
+    ? {
+        configFile: tsconfigFile,
+        references: "auto",
+      }
+    : undefined,
   extensions: [...extensions],
+  extensionAlias: {
+    ".js": [".ts", ".tsx", ".js"],
+    ".cjs": [".cts", ".cjs"],
+    ".mjs": [".mts", ".mjs"],
+    ".jsx": [".tsx", ".jsx"],
+  },
 });
 
 export const resolve: ResolveHook = async (specifier, context, defaultResolve) => {
@@ -50,7 +72,7 @@ export const load: LoadHook = async (url, context, defaultLoad) => {
   }
   const filePath = fileURLToPath(url);
   const ext = extname(filePath);
-  if (scriptExtensions.has(ext)) {
+  if (tsExtensions.has(ext)) {
     const transformResult = transform(filePath, await readFile(filePath, "utf-8"), transformOptions);
 
     const map = Buffer.from(JSON.stringify(transformResult.map)).toString("base64");
