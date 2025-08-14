@@ -34,8 +34,7 @@
   "license": "MIT",
   "files": [
     "**/*.{d.ts,js}+(|.map)",
-    "src",
-    "tsconfig.json"
+    "src"
   ],
   "repository": {
     "type": "git",
