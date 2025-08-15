@@ -19,7 +19,7 @@ const { tsconfig, tsconfigFile } = await (async () => {
   }
 })();
 
-const isModule = tsconfig.compilerOptions?.module !== "commonjs";
+const isModule = tsconfig.compilerOptions?.module?.toLowerCase() !== "commonjs";
 
 const transformOptions = migrate({
   ...tsconfig.compilerOptions,
