@@ -1,12 +1,12 @@
-import { fileURLToPath, pathToFileURL } from "url";
+import type { LoadHook, ResolveHook } from "node:module";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { dirname, extname } from "node:path";
+import { readFile } from "node:fs/promises";
+import { Buffer } from "node:buffer";
 import { ResolverFactory } from "oxc-resolver";
-import { dirname, extname } from "path";
-import type { LoadHook, ResolveHook } from "module";
 import { transform } from "oxc-transform";
-import { readFile } from "fs/promises";
 import migrate from "tsconfig-migrate/oxc.js";
 import { parse } from "tsconfck";
-import { Buffer } from "node:buffer";
 
 const { tsconfig, tsconfigFile } = await (async () => {
   try {
