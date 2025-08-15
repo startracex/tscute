@@ -19,6 +19,8 @@ const { tsconfig, tsconfigFile } = await (async () => {
   }
 })();
 
+const isModule = tsconfig.compilerOptions?.module !== "commonjs";
+
 const transformOptions = migrate({
   ...tsconfig.compilerOptions,
   declaration: false,
@@ -39,11 +41,12 @@ const rf = new ResolverFactory({
     : undefined,
   extensions: [...extensions],
   extensionAlias: {
-    ".js": [".ts", ".tsx", ".js"],
+    ".js": [".ts", ".tsx", ".js", ".jsx"],
     ".cjs": [".cts", ".cjs"],
     ".mjs": [".mts", ".mjs"],
     ".jsx": [".tsx", ".jsx"],
   },
+  moduleType: true,
 });
 
 export const resolve: ResolveHook = async (specifier, context, defaultResolve) => {
@@ -51,11 +54,7 @@ export const resolve: ResolveHook = async (specifier, context, defaultResolve) =
   if (!parentURL) {
     return defaultResolve(specifier, context);
   }
-  let request = specifier;
-  const ext = extname(specifier);
-  if (ext && extensions.has(ext)) {
-    request = specifier.slice(0, -ext.length);
-  }
+  const request = specifier;
   const rr = await rf.async(dirname(fileURLToPath(parentURL)), request);
   if (!rr.path) {
     return defaultResolve(specifier, context);
@@ -79,8 +78,20 @@ export const load: LoadHook = async (url, context, defaultLoad) => {
     const map = Buffer.from(JSON.stringify(transformResult.map)).toString("base64");
     const code = `${transformResult.code}
 //# sourceMappingURL=data:application/json;base64,${map}`;
+    let format: "commonjs" | "module";
+    switch (ext) {
+      case ".cts":
+        format = "commonjs";
+        break;
+      case ".mts":
+      case ".tsx":
+        format = "module";
+        break;
+      default:
+        format = isModule ? "module" : "commonjs";
+    }
     return {
-      format: "module",
+      format,
       source: code,
       shortCircuit: true,
     };
