@@ -1,5 +1,11 @@
 # tscute
 
+## 0.1.1
+
+### Patch Changes
+
+- 71db771: fix: correct resolve and infer module format
+
 ## 0.1.0
 
 ### Minor Changes
