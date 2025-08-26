@@ -1,11 +1,9 @@
 import type { LoadHook, ResolveHook } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, extname } from "node:path";
-import { readFile } from "node:fs/promises";
-import { Buffer } from "node:buffer";
 import { ResolverFactory } from "oxc-resolver";
-import { transform } from "oxc-transform";
-import migrate from "tsconfig-migrate/oxc.js";
+import { transformFile } from "@swc/core";
+import { migrateOptions as migrate } from "tsconfig-migrate/swc.js";
 import { parse } from "tsconfck";
 
 const { tsconfig, tsconfigFile } = await (async () => {
@@ -24,8 +22,9 @@ const isModule = tsconfig.compilerOptions?.module?.toLowerCase() !== "commonjs";
 const transformOptions = migrate({
   ...tsconfig.compilerOptions,
   declaration: false,
-  declarationMap: false,
   sourceMap: true,
+  inlineSourceMap: true,
+  importHelpers: false
 });
 
 const tsExtensions = new Set([".ts", ".mts", ".cts", ".tsx"]);
@@ -73,11 +72,7 @@ export const load: LoadHook = async (url, context, defaultLoad) => {
   const filePath = fileURLToPath(url);
   const ext = extname(filePath);
   if (tsExtensions.has(ext)) {
-    const transformResult = transform(filePath, await readFile(filePath, "utf-8"), transformOptions);
-
-    const map = Buffer.from(JSON.stringify(transformResult.map)).toString("base64");
-    const code = `${transformResult.code}
-//# sourceMappingURL=data:application/json;base64,${map}`;
+    const { code } = await transformFile(filePath, transformOptions);
     let format: "commonjs" | "module";
     switch (ext) {
       case ".cts":
