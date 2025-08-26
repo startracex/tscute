@@ -1,5 +1,15 @@
 # tscute
 
+## 0.2.0
+
+### Minor Changes
+
+- 1db6483: chore: replace oxc-transform with @swc/core for file transformation
+
+### Patch Changes
+
+- b038031: fix: correct conditionNames in ResolverFactory config
+
 ## 0.1.1
 
 ### Patch Changes
