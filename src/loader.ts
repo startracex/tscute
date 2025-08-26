@@ -24,14 +24,14 @@ const transformOptions = migrate({
   declaration: false,
   sourceMap: true,
   inlineSourceMap: true,
-  importHelpers: false
+  importHelpers: false,
 });
 
 const tsExtensions = new Set([".ts", ".mts", ".cts", ".tsx"]);
 const extensions = new Set([...tsExtensions, ".js", ".mjs", ".cjs", ".jsx", ".json", ".wasm", ".node"]);
 
 const rf = new ResolverFactory({
-  conditionNames: ["import", "module", "node"],
+  conditionNames: [...(isModule ? ["import", "module"] : ["require"]), "node"],
   tsconfig: tsconfigFile
     ? {
         configFile: tsconfigFile,
