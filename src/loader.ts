@@ -28,7 +28,7 @@ const transformOptions = migrate({
 });
 
 const tsExtensions = new Set([".ts", ".mts", ".cts", ".tsx"]);
-const extensions = new Set([...tsExtensions, ".js", ".mjs", ".cjs", ".jsx", ".json", ".wasm", ".node"]);
+const extensions = [...tsExtensions, ".js", ".mjs", ".cjs", ".jsx", ".json", ".wasm", ".node"];
 
 const rf = new ResolverFactory({
   conditionNames: [...(isModule ? ["import", "module"] : ["require"]), "node"],
@@ -38,7 +38,7 @@ const rf = new ResolverFactory({
         references: "auto",
       }
     : undefined,
-  extensions: [...extensions],
+  extensions,
   extensionAlias: {
     ".js": [".ts", ".tsx", ".js", ".jsx"],
     ".cjs": [".cts", ".cjs"],
