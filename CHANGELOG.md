@@ -1,5 +1,11 @@
 # tscute
 
+## 0.3.0
+
+### Minor Changes
+
+- 256f11b: add executeScript/importModule
+
 ## 0.2.0
 
 ### Minor Changes
