@@ -4,9 +4,10 @@
   "description": "A CLI to execute TypeScript",
   "type": "module",
   "bin": {
-    "tscute": "build/tscute.js"
+    "tscute": "build/bin/tscute.js"
   },
   "exports": {
+    ".": "./build/index.js",
     "./*.js": "./build/*",
     "./src/*": "./src/*",
     "./package.json": "./package.json"
