@@ -1,7 +1,7 @@
 {
   "name": "tscute",
   "version": "0.2.0",
-  "description": "A CLI to execute TypeScript",
+  "description": "A way to execute/import TypeScript",
   "type": "module",
   "bin": {
     "tscute": "build/bin/tscute.js"
