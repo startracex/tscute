@@ -1,4 +1,4 @@
-import { ChildProcess, spawn, spawnSync } from "child_process";
+import { type ChildProcess, spawn, spawnSync } from "child_process";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { registerURL } from "./loader-register.ts";
