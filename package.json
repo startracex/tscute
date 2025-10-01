@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node build/tscute.js"
+    "start": "node build/bin/tscute.js"
   },
   "dependencies": {
     "@swc/core": "^1.13.5",
