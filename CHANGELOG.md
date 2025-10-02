@@ -1,5 +1,16 @@
 # tscute
 
+## 0.4.0
+
+### Minor Changes
+
+- 3b8a6da: add requireModule
+- 7126acc: implement lazy initialization
+
+### Patch Changes
+
+- 7ffc384: rename return type of importModule
+
 ## 0.3.0
 
 ### Minor Changes
