@@ -6,49 +6,69 @@ import { transformFile } from "@swc/core";
 import { migrateOptions as migrate } from "tsconfig-migrate/swc.js";
 import { parse } from "tsconfck";
 
-const { tsconfig, tsconfigFile } = await (async () => {
-  try {
-    return await parse("tsconfig.json");
-  } catch {
-    return {
-      tsconfig: {},
-      tsconfigFile: undefined,
-    };
-  }
-})();
-
-const isModule = tsconfig.compilerOptions?.module?.toLowerCase() !== "commonjs";
-
-const transformOptions = migrate({
-  ...tsconfig.compilerOptions,
-  declaration: false,
-  sourceMap: true,
-  inlineSourceMap: true,
-  importHelpers: false,
-});
-
 const tsExtensions = new Set([".ts", ".mts", ".cts", ".tsx"]);
 const extensions = [...tsExtensions, ".js", ".mjs", ".cjs", ".jsx", ".json", ".wasm", ".node"];
 
-const rf = new ResolverFactory({
-  conditionNames: [...(isModule ? ["import", "module"] : ["require"]), "node"],
-  tsconfig: tsconfigFile
-    ? {
-        configFile: tsconfigFile,
-        references: "auto",
-      }
-    : undefined,
-  extensions,
-  extensionAlias: {
-    ".js": [".ts", ".tsx", ".js", ".jsx"],
-    ".cjs": [".cts", ".cjs"],
-    ".mjs": [".mts", ".mjs"],
-    ".jsx": [".tsx", ".jsx"],
-  },
-  moduleType: true,
-});
+interface InitResult {
+  tsconfig: any;
+  tsconfigFile: string | undefined;
+  isModule: boolean;
+  transformOptions: any;
+  resolverFactor: ResolverFactory;
+}
+
+let initResult: InitResult | null = null;
+
+const init = async (): Promise<InitResult> => {
+  if (initResult) {
+    return initResult;
+  }
+
+  const { tsconfig, tsconfigFile } = await (async () => {
+    try {
+      return await parse("tsconfig.json");
+    } catch {
+      return {
+        tsconfig: {},
+        tsconfigFile: undefined,
+      };
+    }
+  })();
+
+  const isModule = tsconfig.compilerOptions?.module?.toLowerCase() !== "commonjs";
+
+  const transformOptions = migrate({
+    ...tsconfig.compilerOptions,
+    declaration: false,
+    sourceMap: true,
+    inlineSourceMap: true,
+    importHelpers: false,
+  });
+
+  const rf: ResolverFactory = new ResolverFactory({
+    conditionNames: [...(isModule ? ["import", "module"] : ["require"]), "node"],
+    tsconfig: tsconfigFile
+      ? {
+          configFile: tsconfigFile,
+          references: "auto",
+        }
+      : undefined,
+    extensions,
+    extensionAlias: {
+      ".js": [".ts", ".tsx", ".js", ".jsx"],
+      ".cjs": [".cts", ".cjs"],
+      ".mjs": [".mts", ".mjs"],
+      ".jsx": [".tsx", ".jsx"],
+    },
+    moduleType: true,
+  });
+
+  initResult = { tsconfig, tsconfigFile, isModule, transformOptions, resolverFactor: rf };
+  return initResult;
+};
 
 export const resolve: ResolveHook = async (specifier, context, defaultResolve) => {
+  const { resolverFactor: rf } = await init();
   const { parentURL } = context;
   if (!parentURL) {
     return defaultResolve(specifier, context);
@@ -66,6 +86,7 @@ export const resolve: ResolveHook = async (specifier, context, defaultResolve) =
 };
 
 export const load: LoadHook = async (url, context, defaultLoad) => {
+  const { transformOptions, isModule } = await init();
   if (!url.startsWith("file:")) {
     return defaultLoad(url, context);
   }
