@@ -20,7 +20,7 @@ const message = (childProcess: ChildProcess) => {
   });
 };
 
-export const importModule = async (...args: string[]): Promise<object> | null => {
+export const importModule = async (...args: string[]): Promise<Record<string, any> | null> => {
   const workerPath = join(dirname(fileURLToPath(import.meta.url)), "worker.js");
   const child = spawn(process.execPath, [...importArgs, workerPath, ...args], {
     stdio: ["inherit", "inherit", "inherit", "ipc"],
