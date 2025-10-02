@@ -12,10 +12,12 @@ import { executeScript } from "tscute";
 await executeScript("./bin-file.ts");
 ```
 
-## Import module
+## Import/Require module
 
 ```js
-import { importModule } from "tscute";
+import { importModule, requireModule } from "tscute";
 
-const exports = await importModule("./mod-file.ts");
+var exports = await importModule("./mod-file.ts");
+
+var exports = await requireModule("./mod-file.ts");
 ```

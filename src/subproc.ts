@@ -20,14 +20,20 @@ const message = (childProcess: ChildProcess) => {
   });
 };
 
-export const importModule = async (...args: string[]): Promise<Record<string, any> | null> => {
-  const workerPath = join(dirname(fileURLToPath(import.meta.url)), "worker.js");
-  const child = spawn(process.execPath, [...importArgs, workerPath, ...args], {
-    stdio: ["inherit", "inherit", "inherit", "ipc"],
-  });
-  try {
-    return (await message(child)) as any;
-  } catch {
-    return null;
-  }
+const createRunner = (workerPath: string) => {
+  return async (...args: string[]): Promise<Record<string, any> | null> => {
+    const child = spawn(process.execPath, [...importArgs, workerPath, ...args], {
+      stdio: ["inherit", "inherit", "inherit", "ipc"],
+    });
+    try {
+      return (await message(child)) as any;
+    } catch {
+      return null;
+    }
+  };
 };
+
+const dir = dirname(fileURLToPath(import.meta.url));
+
+export const importModule = createRunner(join(dir, "worker-import.js"));
+export const requireModule = createRunner(join(dir, "worker-require.js"));
