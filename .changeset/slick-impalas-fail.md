@@ -1,5 +1,0 @@
----
-"tscute": minor
----
-
-add requireModule
