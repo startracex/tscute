@@ -9,7 +9,7 @@
   "main": "build/loader-register.js",
   "exports": {
     ".": "./build/loader-register.js",
-    "./*.js": "./build/*",
+    "./*.js": "./build/*.js",
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
