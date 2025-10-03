@@ -1,5 +1,15 @@
 # tscute
 
+## 0.5.0
+
+### Minor Changes
+
+- f751925: replace importing from a worker thread by registering a loader
+
+### Patch Changes
+
+- eb1d6bc: update broken exports
+
 ## 0.4.0
 
 ### Minor Changes
