@@ -6,8 +6,9 @@
   "bin": {
     "tscute": "build/bin/tscute.js"
   },
+  "main": "build/loader-register.js",
   "exports": {
-    ".": "./build/index.js",
+    ".": "./build/loader-register.js",
     "./*.js": "./build/*",
     "./src/*": "./src/*",
     "./package.json": "./package.json"

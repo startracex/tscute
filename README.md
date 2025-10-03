@@ -4,20 +4,13 @@
 
 ```sh
 tscute bin-file.ts
+node --import tscute bin-file.ts
 ```
 
-```js
-import { executeScript } from "tscute";
-
-await executeScript("./bin-file.ts");
-```
-
-## Import/Require module
+## Import module
 
 ```js
-import { importModule, requireModule } from "tscute";
+import "tscute";
 
-var exports = await importModule("./mod-file.ts");
-
-var exports = await requireModule("./mod-file.ts");
+import("./mod-file.ts");
 ```

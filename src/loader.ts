@@ -1,10 +1,10 @@
 import type { LoadHook, ResolveHook } from "node:module";
-import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, extname } from "node:path";
-import { ResolverFactory } from "oxc-resolver";
 import { transformFile } from "@swc/core";
-import { migrateOptions as migrate } from "tsconfig-migrate/swc.js";
+import { ResolverFactory } from "oxc-resolver";
 import { parse } from "tsconfck";
+import { migrateOptions as migrate } from "tsconfig-migrate/swc.js";
+import { isFileProto, toFileURLPath, toPath } from "./url.ts";
 
 const tsExtensions = new Set([".ts", ".mts", ".cts", ".tsx"]);
 const extensions = [...tsExtensions, ".js", ".mjs", ".cjs", ".jsx", ".json", ".wasm", ".node"];
@@ -74,12 +74,12 @@ export const resolve: ResolveHook = async (specifier, context, defaultResolve) =
     return defaultResolve(specifier, context);
   }
   const request = specifier;
-  const rr = await rf.async(dirname(fileURLToPath(parentURL)), request);
+  const rr = await rf.async(dirname(toPath(parentURL)), request);
   if (!rr.path) {
     return defaultResolve(specifier, context);
   }
   return {
-    url: pathToFileURL(rr.path).toString(),
+    url: toFileURLPath(rr.path),
     format: rr.moduleType,
     shortCircuit: true,
   };
@@ -87,10 +87,10 @@ export const resolve: ResolveHook = async (specifier, context, defaultResolve) =
 
 export const load: LoadHook = async (url, context, defaultLoad) => {
   const { transformOptions, isModule } = await init();
-  if (!url.startsWith("file:")) {
+  if (!isFileProto(url)) {
     return defaultLoad(url, context);
   }
-  const filePath = fileURLToPath(url);
+  const filePath = toPath(url);
   const ext = extname(filePath);
   if (tsExtensions.has(ext)) {
     const { code } = await transformFile(filePath, transformOptions);
@@ -116,4 +116,4 @@ export const load: LoadHook = async (url, context, defaultLoad) => {
   return defaultLoad(url, context);
 };
 
-export const loaderURL = import.meta.url;
+export const loaderURL: string = import.meta.url;
