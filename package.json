@@ -46,5 +46,5 @@
     "type": "git",
     "url": "git+https://github.com/startracex/tscute.git"
   },
-  "packageManager": "pnpm@10.17.1"
+  "packageManager": "pnpm@10.18.0"
 }
