@@ -1,5 +1,12 @@
 # tscute
 
+## 0.6.0
+
+### Minor Changes
+
+- 912a654: feat: replace @swc/core with esbuild
+- 3e03b02: feat: update registration method to use registerHooks
+
 ## 0.5.0
 
 ### Minor Changes
