@@ -16,14 +16,15 @@
   "scripts": {
     "build": "tsc",
     "fmt": "oxfmt",
-    "lint": "oxlint",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint --fix",
+    "lint:check": "oxlint",
     "start": "node build/bin/tscute.js"
   },
   "dependencies": {
-    "@swc/core": "^1.13.5",
+    "esbuild": "^0.28.2",
     "get-tsconfig": "^4.14.3",
     "oxc-resolver": "^11.8.4",
-    "tsconfig-migrate": "^0.2.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {

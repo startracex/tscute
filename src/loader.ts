@@ -1,19 +1,32 @@
-import type { LoadHook, ResolveHook } from "node:module";
+import { readFileSync } from "node:fs";
+import type { LoadHookSync, ResolveHookSync } from "node:module";
 import { dirname, extname } from "node:path";
-import { transformFile } from "@swc/core";
+import { transformSync } from "esbuild";
 import { getTsconfig } from "get-tsconfig";
 import { ResolverFactory } from "oxc-resolver";
-import { migrateOptions as migrate } from "tsconfig-migrate/swc.js";
 import { isFileProto, toFileURLPath, toPath } from "./url.ts";
+
+type NodeFormat = "commonjs" | "module";
 
 const tsExtensions = new Set([".ts", ".mts", ".cts", ".tsx"]);
 const extensions = [...tsExtensions, ".js", ".mjs", ".cjs", ".jsx", ".json", ".wasm", ".node"];
+
+const nodeFormatFor = (ext: string, isModule: boolean): NodeFormat => {
+  switch (ext) {
+    case ".cts":
+      return "commonjs";
+    case ".mts":
+    case ".tsx":
+      return "module";
+    default:
+      return isModule ? "module" : "commonjs";
+  }
+};
 
 interface InitResult {
   tsconfig: any;
   tsconfigFile: string | undefined;
   isModule: boolean;
-  transformOptions: any;
   resolverFactor: ResolverFactory;
 }
 
@@ -36,14 +49,6 @@ const init = (): InitResult => {
 
   const isModule = tsconfig.compilerOptions?.module?.toLowerCase() !== "commonjs";
 
-  const transformOptions = migrate({
-    ...tsconfig.compilerOptions,
-    declaration: false,
-    sourceMap: true,
-    inlineSourceMap: true,
-    importHelpers: false,
-  });
-
   const rf: ResolverFactory = new ResolverFactory({
     conditionNames: [...(isModule ? ["import", "module"] : ["require"]), "node"],
     tsconfig: tsconfigFile
@@ -62,20 +67,20 @@ const init = (): InitResult => {
     moduleType: true,
   });
 
-  initResult = { tsconfig, tsconfigFile, isModule, transformOptions, resolverFactor: rf };
+  initResult = { tsconfig, tsconfigFile, isModule, resolverFactor: rf };
   return initResult;
 };
 
-export const resolve: ResolveHook = async (specifier, context, defaultResolve) => {
+export const resolve: ResolveHookSync = (specifier, context, nextResolve) => {
   const { resolverFactor: rf } = init();
   const { parentURL } = context;
   if (!parentURL) {
-    return defaultResolve(specifier, context);
+    return nextResolve(specifier, context);
   }
   const request = specifier;
-  const rr = await rf.async(dirname(toPath(parentURL)), request);
+  const rr = rf.sync(dirname(toPath(parentURL)), request);
   if (!rr.path) {
-    return defaultResolve(specifier, context);
+    return nextResolve(specifier, context);
   }
   return {
     url: toFileURLPath(rr.path),
@@ -84,27 +89,25 @@ export const resolve: ResolveHook = async (specifier, context, defaultResolve) =
   };
 };
 
-export const load: LoadHook = async (url, context, defaultLoad) => {
-  const { transformOptions, isModule } = init();
+export const load: LoadHookSync = (url, context, nextLoad) => {
+  const { tsconfig, isModule } = init();
   if (!isFileProto(url)) {
-    return defaultLoad(url, context);
+    return nextLoad(url, context);
   }
   const filePath = toPath(url);
   const ext = extname(filePath);
   if (tsExtensions.has(ext)) {
-    const { code } = await transformFile(filePath, transformOptions);
-    let format: "commonjs" | "module";
-    switch (ext) {
-      case ".cts":
-        format = "commonjs";
-        break;
-      case ".mts":
-      case ".tsx":
-        format = "module";
-        break;
-      default:
-        format = isModule ? "module" : "commonjs";
-    }
+    const format = nodeFormatFor(ext, isModule);
+    const { code } = transformSync(readFileSync(filePath, "utf8"), {
+      loader: ext === ".tsx" ? "tsx" : "ts",
+      format: format === "module" ? "esm" : "cjs",
+      sourcefile: filePath,
+      sourcemap: "inline",
+      target: tsconfig.compilerOptions?.target?.toLowerCase() ?? "esnext",
+      tsconfigRaw: {
+        compilerOptions: tsconfig.compilerOptions ?? {},
+      },
+    });
     return {
       format,
       source: code,
@@ -112,7 +115,5 @@ export const load: LoadHook = async (url, context, defaultLoad) => {
     };
   }
 
-  return defaultLoad(url, context);
+  return nextLoad(url, context);
 };
-
-export const loaderURL: string = import.meta.url;
