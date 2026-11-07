@@ -15,21 +15,23 @@
   },
   "scripts": {
     "build": "tsc",
-    "fmt": "dprint fmt",
+    "fmt": "oxfmt",
+    "lint": "oxlint",
     "start": "node build/bin/tscute.js"
   },
   "dependencies": {
     "@swc/core": "^1.13.5",
+    "get-tsconfig": "^4.14.3",
     "oxc-resolver": "^11.8.4",
-    "tsconfck": "^3.1.6",
     "tsconfig-migrate": "^0.2.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
-    "@startracex/dev-config": "^0.6.0",
+    "@startracex/dev-config": "^0.7.0",
     "@types/node": "^26.6.6",
-    "dprint": "^0.64.3",
+    "oxfmt": "^0.77.0",
+    "oxlint": "^1.92.0",
     "typescript": "^7.0.2"
   },
   "keywords": [
@@ -46,5 +48,5 @@
     "type": "git",
     "url": "git+https://github.com/startracex/tscute.git"
   },
-  "packageManager": "pnpm@10.18.0"
+  "packageManager": "pnpm@12.16.1"
 }

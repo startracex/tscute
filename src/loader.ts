@@ -1,8 +1,8 @@
 import type { LoadHook, ResolveHook } from "node:module";
 import { dirname, extname } from "node:path";
 import { transformFile } from "@swc/core";
+import { getTsconfig } from "get-tsconfig";
 import { ResolverFactory } from "oxc-resolver";
-import { parse } from "tsconfck";
 import { migrateOptions as migrate } from "tsconfig-migrate/swc.js";
 import { isFileProto, toFileURLPath, toPath } from "./url.ts";
 
@@ -19,21 +19,20 @@ interface InitResult {
 
 let initResult: InitResult | null = null;
 
-const init = async (): Promise<InitResult> => {
+const init = (): InitResult => {
   if (initResult) {
     return initResult;
   }
 
-  const { tsconfig, tsconfigFile } = await (async () => {
+  const result = (() => {
     try {
-      return await parse("tsconfig.json");
+      return getTsconfig();
     } catch {
-      return {
-        tsconfig: {},
-        tsconfigFile: undefined,
-      };
+      return null;
     }
   })();
+  const tsconfig = result?.config ?? {};
+  const tsconfigFile = result?.path;
 
   const isModule = tsconfig.compilerOptions?.module?.toLowerCase() !== "commonjs";
 
@@ -68,7 +67,7 @@ const init = async (): Promise<InitResult> => {
 };
 
 export const resolve: ResolveHook = async (specifier, context, defaultResolve) => {
-  const { resolverFactor: rf } = await init();
+  const { resolverFactor: rf } = init();
   const { parentURL } = context;
   if (!parentURL) {
     return defaultResolve(specifier, context);
@@ -86,7 +85,7 @@ export const resolve: ResolveHook = async (specifier, context, defaultResolve) =
 };
 
 export const load: LoadHook = async (url, context, defaultLoad) => {
-  const { transformOptions, isModule } = await init();
+  const { transformOptions, isModule } = init();
   if (!isFileProto(url)) {
     return defaultLoad(url, context);
   }

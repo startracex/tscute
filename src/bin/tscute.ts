@@ -1,6 +1,6 @@
 #!/usr/bin/env node
+import { spawnSync } from "node:child_process";
 import process from "node:process";
-import { spawnSync } from "child_process";
 import { registerURL } from "../loader-register.ts";
 
 const executeScript = (...args: string[]): ReturnType<typeof spawnSync> => {
