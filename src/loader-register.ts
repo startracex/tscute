@@ -1,6 +1,6 @@
-import { register } from "node:module";
-import { loaderURL } from "./loader.ts";
+import { registerHooks } from "node:module";
+import { load, resolve } from "./loader.ts";
 
 export const registerURL: string = import.meta.url;
 
-register(loaderURL, registerURL);
+registerHooks({ resolve, load });
